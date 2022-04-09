@@ -44,7 +44,7 @@ export async function handleMagickLinkConfirmationRequest(
                 firstname: magickTokenDecoded.firstname,
                 lastname: magickTokenDecoded.lastname
             },
-            `${process.env.JWT_SECRET}`,
+            args.jwtSecret,
             {
                 expiresIn: '1d',
                 audience: magickTokenDecoded.email,
