@@ -1,5 +1,5 @@
 import { Cart, CartHydraterArguments, CartItem, CartRequest } from './types';
-import { CrystallizeHydraterBySkus } from '@crystallize/js-api-client';
+import { CrystallizeHydraterBySkus, ProductPriceVariant } from '@crystallize/js-api-client';
 import type { ProductVariant, Product } from '@crystallize/js-api-client';
 import Koa from 'koa';
 
@@ -54,8 +54,8 @@ export const handleCartRequest = async (
     const items: CartItem[] = request.items.map((item) => {
         let selectedVariant: ProductVariant | undefined;
 
-        const product: Product | undefined = products.find((product) => {
-            selectedVariant = product.variants.find(
+        const product: Product | undefined = products.find((product: Product) => {
+            selectedVariant = product?.variants?.find(
                 (variant: Pick<ProductVariant, 'sku'>) => variant.sku === item.sku
             ) as ProductVariant;
             return selectedVariant !== undefined ? product : undefined;
@@ -69,10 +69,15 @@ export const handleCartRequest = async (
             throw new Error(`Could not find variant with sku ${item.sku}`);
         }
 
-        const selectedPrice = selectedVariant.priceVariants[0];
-        const selectedCurrency = selectedVariant.priceVariants[0].currency;
-        const grossAmount = selectedPrice.price * item.quantity;
-        const taxAmount = (grossAmount * product.vatType.percent) / 100;
+        // it's odd but it can happen that the product has no price
+        const selectedPrice: ProductPriceVariant =
+            selectedVariant.priceVariants === undefined
+                ? { price: 0, identifier: 'undefined' }
+                : selectedVariant.priceVariants[0] || { price: 0, identifier: 'undefined' };
+        const selectedCurrency =
+            selectedVariant.priceVariants === undefined ? 'EUR' : selectedVariant.priceVariants[0].currency || 'EUR';
+        const grossAmount = selectedPrice?.price || 0 * item.quantity;
+        const taxAmount = (grossAmount * (product?.vatType?.percent || 0)) / 100;
         const netAmount = grossAmount + taxAmount;
 
         totals.taxAmount += taxAmount;
