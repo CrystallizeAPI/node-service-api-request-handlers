@@ -1,73 +1,35 @@
 import Koa from 'koa';
-import { CrystallizeClient } from '@crystallize/js-api-client';
+import {
+    CrystallizeOrderFetcherById,
+    CrystallizeOrderFetcherByCustomerIdentifier,
+    Order
+} from '@crystallize/js-api-client';
+import { OrderArguments, OrdersArguments } from './types';
 
-export async function handleOrderConfirmationRequest(request: any, context: Koa.Context, args: any): Promise<any> {
-    const order = await CrystallizeClient.orderApi(ORDER_QUERY, {
-        orderId: context.params.id
-    });
-
-    if (order?.orders?.get?.customer?.identifier !== context.user) {
+export async function handleOrderRequest(request: any, context: Koa.Context, args: OrderArguments): Promise<Order> {
+    const order = await CrystallizeOrderFetcherById(
+        context.params.id,
+        args?.onCustomer,
+        args?.onOrderItem,
+        args?.extraQuery
+    );
+    if (order.customer?.identifier !== context.user) {
         throw {
             status: 403,
             message: 'Unauthorized. That is not your order.'
         };
     }
-    return order.orders.get;
+    return order;
 }
 
-//@todo: should be using the client or at least a structure way
-const ORDER_QUERY = `query GET_ORDER($orderId: ID!) {
-  orders {
-    get(id: $orderId) {
-      id
-      createdAt
-      updatedAt
-      customer {
-        identifier
-        firstName
-        middleName
-        lastName
-        birthDate
-        addresses {
-          type
-          firstName
-          middleName
-          lastName
-          street
-          street2
-          streetNumber
-          postalCode
-          city
-          state
-          country
-          phone
-          email
-        }
-      }
-      cart {
-        name
-        sku
-        productId
-        productVariantId
-        imageUrl
-        quantity
-        price {
-          gross
-          net
-          discounts {
-            percent
-          }
-        }
-      }
-      total {
-        gross
-        net
-        tax {
-          name
-          percent
-        }
-      }
-    }
-  }
+export async function handleOrdersRequest(request: any, context: Koa.Context, args: OrdersArguments): Promise<Order[]> {
+    // @todo: handle pagination
+    const pagination = await CrystallizeOrderFetcherByCustomerIdentifier(
+        context.user,
+        args?.extraQueryArgs,
+        args?.onCustomer,
+        args?.onOrderItem,
+        args?.extraQuery
+    );
+    return pagination.orders;
 }
-`;
