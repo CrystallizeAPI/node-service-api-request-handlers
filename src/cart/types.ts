@@ -1,19 +1,19 @@
 import { z } from 'zod';
 import type { Image, Product, ProductVariant, ProductPriceVariant } from '@crystallize/js-api-client';
 
-const cartItemRequest = z.object({
+const cartItemPayload = z.object({
     sku: z.string(),
     quantity: z.number()
 });
 
-export const cartRequest = z.object({
+export const cartPayload = z.object({
     locale: z.string(),
     withImages: z.boolean().optional(),
-    items: z.array(cartItemRequest)
+    items: z.array(cartItemPayload)
 });
 
-export type CartRequest = z.infer<typeof cartRequest>;
-export type CartItemRequest = z.infer<typeof cartItemRequest>;
+export type CartPayload = z.infer<typeof cartPayload>;
+export type CartItemPayload = z.infer<typeof cartItemPayload>;
 
 export interface Cart {
     cart: {

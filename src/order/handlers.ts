@@ -1,4 +1,3 @@
-import Koa from 'koa';
 import {
     CrystallizeOrderFetcherById,
     CrystallizeOrderFetcherByCustomerIdentifier,
@@ -6,14 +5,14 @@ import {
 } from '@crystallize/js-api-client';
 import { OrderArguments, OrdersArguments } from './types';
 
-export async function handleOrderRequest(request: any, context: Koa.Context, args: OrderArguments): Promise<Order> {
+export async function handleOrderRequestPayload(payload: any, args: OrderArguments): Promise<Order> {
     const order = await CrystallizeOrderFetcherById(
-        context.params.id,
+        args.orderId,
         args?.onCustomer,
         args?.onOrderItem,
         args?.extraQuery
     );
-    if (order.customer?.identifier !== context.user) {
+    if (order.customer?.identifier !== args.user) {
         throw {
             status: 403,
             message: 'Unauthorized. That is not your order.'
@@ -22,10 +21,10 @@ export async function handleOrderRequest(request: any, context: Koa.Context, arg
     return order;
 }
 
-export async function handleOrdersRequest(request: any, context: Koa.Context, args: OrdersArguments): Promise<Order[]> {
+export async function handleOrdersRequestPayload(payload: any, args: OrdersArguments): Promise<Order[]> {
     // @todo: handle pagination
     const pagination = await CrystallizeOrderFetcherByCustomerIdentifier(
-        context.user,
+        args.user,
         args?.extraQueryArgs,
         args?.onCustomer,
         args?.onOrderItem,

@@ -1,18 +1,13 @@
-import { Cart, CartHydraterArguments, CartItem, CartRequest } from './types';
+import { Cart, CartHydraterArguments, CartItem, CartPayload } from './types';
 import { CrystallizeHydraterBySkus, ProductPriceVariant } from '@crystallize/js-api-client';
 import type { ProductVariant, Product } from '@crystallize/js-api-client';
-import Koa from 'koa';
 
-export const handleCartRequest = async (
-    request: CartRequest,
-    context: Koa.Context,
-    args?: CartHydraterArguments
-): Promise<Cart> => {
-    const skus = request.items.map((item) => item.sku);
+export const handleCartRequestPayload = async (payload: CartPayload, args: CartHydraterArguments): Promise<Cart> => {
+    const skus = payload.items.map((item) => item.sku);
 
     const hydraterParameters = {
         skus,
-        locale: request.locale,
+        locale: payload.locale,
         ...args
     };
 
@@ -24,7 +19,7 @@ export const handleCartRequest = async (
         (item: string, index: number) => {
             return {
                 ...(hydraterParameters.perVariant !== undefined ? hydraterParameters.perVariant(item, index) : {}),
-                ...(request.withImages === undefined || request.withImages === false
+                ...(payload.withImages === undefined || payload.withImages === false
                     ? {}
                     : {
                           images: {
@@ -51,7 +46,7 @@ export const handleCartRequest = async (
         taxAmount: 0
     };
 
-    const items: CartItem[] = request.items.map((item) => {
+    const items: CartItem[] = payload.items.map((item) => {
         let selectedVariant: ProductVariant | undefined;
 
         const product: Product | undefined = products.find((product: Product) => {
