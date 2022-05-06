@@ -8,7 +8,7 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
     const hydraterParameters = {
         skus,
         locale: payload.locale,
-        ...args
+        ...args,
     };
 
     const response = await CrystallizeHydraterBySkus(
@@ -27,12 +27,12 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
                               variants: {
                                   url: true,
                                   width: true,
-                                  height: true
-                              }
-                          }
-                      })
+                                  height: true,
+                              },
+                          },
+                      }),
             };
-        }
+        },
     );
 
     const products: Product[] = skus
@@ -43,7 +43,7 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
         gross: 0,
         currency: 'USD',
         net: 0,
-        taxAmount: 0
+        taxAmount: 0,
     };
 
     const items: CartItem[] = payload.items.map((item) => {
@@ -51,7 +51,7 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
 
         const product: Product | undefined = products.find((product: Product) => {
             selectedVariant = product?.variants?.find(
-                (variant: Pick<ProductVariant, 'sku'>) => variant.sku === item.sku
+                (variant: Pick<ProductVariant, 'sku'>) => variant.sku === item.sku,
             ) as ProductVariant;
             return selectedVariant !== undefined ? product : undefined;
         });
@@ -86,19 +86,19 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
                 gross: grossAmount,
                 net: netAmount,
                 currency: selectedCurrency,
-                taxAmount
+                taxAmount,
             },
             variant: selectedVariant,
             variantPrice: selectedPrice,
-            product
+            product,
         };
     });
 
     const cart: Cart = {
         total: totals,
         cart: {
-            items: items
-        }
+            items: items,
+        },
     };
     return cart;
 };

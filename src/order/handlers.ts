@@ -1,7 +1,7 @@
 import {
     CrystallizeOrderFetcherById,
     CrystallizeOrderFetcherByCustomerIdentifier,
-    Order
+    Order,
 } from '@crystallize/js-api-client';
 import { OrderArguments, OrdersArguments } from './types';
 
@@ -10,12 +10,12 @@ export async function handleOrderRequestPayload(payload: any, args: OrderArgumen
         args.orderId,
         args?.onCustomer,
         args?.onOrderItem,
-        args?.extraQuery
+        args?.extraQuery,
     );
     if (order.customer?.identifier !== args.user) {
         throw {
             status: 403,
-            message: 'Unauthorized. That is not your order.'
+            message: 'Unauthorized. That is not your order.',
         };
     }
     return order;
@@ -28,7 +28,7 @@ export async function handleOrdersRequestPayload(payload: any, args: OrdersArgum
         args?.extraQueryArgs,
         args?.onCustomer,
         args?.onOrderItem,
-        args?.extraQuery
+        args?.extraQuery,
     );
     return pagination.orders;
 }

@@ -5,13 +5,13 @@ import { Cart } from '../types';
 export enum State {
     Cart = 'cart',
     Placed = 'placed',
-    Paid = 'paid'
+    Paid = 'paid',
 }
 
 export enum Transition {
     Save = 'save',
     Place = 'place',
-    Fullfill = 'fullfill'
+    Fullfill = 'fullfill',
 }
 
 export type CartWrapper = {
@@ -35,29 +35,29 @@ const defaultStateMachineDefinition: StateMachineDefinition = {
         [State.Cart]: {
             transitions: {
                 [Transition.Save]: {
-                    to: State.Cart
+                    to: State.Cart,
                 },
                 [Transition.Place]: {
-                    to: State.Placed
-                }
-            }
+                    to: State.Placed,
+                },
+            },
         },
         [State.Placed]: {
             transitions: {
                 [Transition.Fullfill]: {
-                    to: State.Paid
-                }
-            }
+                    to: State.Paid,
+                },
+            },
         },
         [State.Paid]: {
-            transitions: {}
-        }
-    }
+            transitions: {},
+        },
+    },
 };
 
 export function createRepository(
     storage: BackendStorage,
-    stateMachineDefinition?: StateMachineDefinition
+    stateMachineDefinition?: StateMachineDefinition,
 ): CartWrapperRepository {
     const buildMachine = (subject: any): StateMachine =>
         createStateMachine(subject, 'state', stateMachineDefinition || defaultStateMachineDefinition);
@@ -79,7 +79,7 @@ export function createRepository(
             cartId: id,
             cart,
             state: State.Cart,
-            extra
+            extra,
         };
     }
 
@@ -119,6 +119,6 @@ export function createRepository(
         create,
         save,
         place,
-        attachOrderId
+        attachOrderId,
     };
 }

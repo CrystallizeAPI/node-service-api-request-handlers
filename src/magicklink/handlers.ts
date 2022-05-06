@@ -3,12 +3,12 @@ import {
     MagickLinkConfirmArguments,
     MagickLinkRegisterArguments,
     MagickLinkUserInfos,
-    MagickLinkUserInfosPayload
+    MagickLinkUserInfosPayload,
 } from './types';
 
 export async function handleMagickLinkRegisterPayload(
     payload: MagickLinkUserInfosPayload,
-    args: MagickLinkRegisterArguments
+    args: MagickLinkRegisterArguments,
 ): Promise<MagickLinkUserInfos> {
     // we use a symetric key here to make it simple, but in production you should use a public/private key pair
     // which will allow you to verify the token client side too, (even if not really required it is a good idea)
@@ -16,7 +16,7 @@ export async function handleMagickLinkRegisterPayload(
         expiresIn: '30m',
         audience: payload.email,
         subject: 'magicklink',
-        issuer: args.host
+        issuer: args.host,
     });
     const link = args.confirmLinkUrl.replace(':token', magickToken);
     args.mailer(args.subject, payload.email, args.from, args.buildHtml(payload, link));
@@ -25,7 +25,7 @@ export async function handleMagickLinkRegisterPayload(
 
 export async function handleMagickLinkConfirmationRequestPayload(
     payload: any,
-    args: MagickLinkConfirmArguments
+    args: MagickLinkConfirmArguments,
 ): Promise<string> {
     const magickToken: string = (args.token || '') as string;
     const magickTokenDecoded: MagickLinkUserInfos = jwt.verify(magickToken, args.jwtSecret) as MagickLinkUserInfos;
@@ -35,22 +35,22 @@ export async function handleMagickLinkConfirmationRequestPayload(
         {
             email: magickTokenDecoded.email,
             firstname: magickTokenDecoded.firstname,
-            lastname: magickTokenDecoded.lastname
+            lastname: magickTokenDecoded.lastname,
         },
         args.jwtSecret,
         {
             expiresIn: '1d',
             audience: magickTokenDecoded.email,
             subject: 'isSupposedToBeLoggedInOnServiceApi',
-            issuer: args.host
-        }
+            issuer: args.host,
+        },
     );
 
     const isLoggedInOnServiceApiToken = jwt.sign({}, args.jwtSecret, {
         expiresIn: '1d',
         audience: magickTokenDecoded.email,
         subject: 'isLoggedInOnServiceApiToken',
-        issuer: args.host
+        issuer: args.host,
     });
     args.setCookie('jwt', isLoggedInOnServiceApiToken);
     return args.backLinkPath.replace(':token', isSupposedToBeLoggedInOnServiceApiToken);

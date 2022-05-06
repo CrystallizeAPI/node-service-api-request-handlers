@@ -3,13 +3,13 @@ import type { Image, Product, ProductVariant, ProductPriceVariant } from '@cryst
 
 const cartItemPayload = z.object({
     sku: z.string(),
-    quantity: z.number()
+    quantity: z.number(),
 });
 
 export const cartPayload = z.object({
     locale: z.string(),
     withImages: z.boolean().optional(),
-    items: z.array(cartItemPayload)
+    items: z.array(cartItemPayload),
 });
 
 export type CartPayload = z.infer<typeof cartPayload>;

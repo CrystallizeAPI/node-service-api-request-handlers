@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 
 export const stripePaymentIntentPayload = z
     .object({
-        cartId: z.string()
+        cartId: z.string(),
     })
     .strict();
 

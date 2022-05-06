@@ -4,7 +4,7 @@ export const magickLinkUserInfosPayload = z
     .object({
         email: z.string(),
         firstname: z.string(),
-        lastname: z.string()
+        lastname: z.string(),
     })
     .strict();
 

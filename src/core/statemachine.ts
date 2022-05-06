@@ -22,7 +22,7 @@ export type StateMachine = {
 export function createStateMachine(
     subject: any,
     stateProperty: string,
-    definition: StateMachineDefinition
+    definition: StateMachineDefinition,
 ): StateMachine {
     const { states } = definition;
 
@@ -33,14 +33,14 @@ export function createStateMachine(
             currentStateDefinition.transitions[transitionName as keyof typeof currentStateDefinition.transitions];
         if (!destinationTransition) {
             throw new TransitionError(
-                `Cannot find the transition '${transitionName}' on subject with state '${currentState}'.`
+                `Cannot find the transition '${transitionName}' on subject with state '${currentState}'.`,
             );
         }
         const destinationState = destinationTransition.to;
         const destinationStateDefinition = states[destinationState as keyof typeof states];
         if (!destinationStateDefinition) {
             throw new TransitionError(
-                `Cannot transition to '${destinationState}' from '${currentState}'. It does not exist.`
+                `Cannot transition to '${destinationState}' from '${currentState}'. It does not exist.`,
             );
         }
 
@@ -48,7 +48,7 @@ export function createStateMachine(
             currentStateDefinition,
             destinationTransition,
             destinationStateDefinition,
-            destinationState
+            destinationState,
         };
     };
 
@@ -79,7 +79,7 @@ export function createStateMachine(
             } catch (exception) {
                 return false;
             }
-        }
+        },
     };
 }
 
