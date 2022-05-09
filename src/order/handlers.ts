@@ -12,6 +12,12 @@ export async function handleOrderRequestPayload(payload: any, args: OrderArgumen
         args?.onOrderItem,
         args?.extraQuery,
     );
+    if (!order) {
+        throw {
+            status: 404,
+            message: `Order ${args.orderId} does not exist.`,
+        };
+    }
     if (order.customer?.identifier !== args.user) {
         throw {
             status: 403,
