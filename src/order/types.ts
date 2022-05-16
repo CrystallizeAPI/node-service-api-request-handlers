@@ -1,4 +1,7 @@
+import { CrystallizeOrderFetcherByCustomerIdentifier, CrystallizeOrderFetcherById } from '@crystallize/js-api-client';
+
 export type OrderArguments = {
+    fetcherById?: typeof CrystallizeOrderFetcherById;
     orderId: string;
     user: string;
     onCustomer?: any;
@@ -7,6 +10,7 @@ export type OrderArguments = {
 };
 
 export type OrdersArguments = {
+    fetcherByCustomerIdentifier?: typeof CrystallizeOrderFetcherByCustomerIdentifier;
     user: string;
     extraQueryArgs?: any;
     onCustomer?: any;

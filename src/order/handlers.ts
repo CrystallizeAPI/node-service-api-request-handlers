@@ -6,12 +6,8 @@ import {
 import { OrderArguments, OrdersArguments } from './types';
 
 export async function handleOrderRequestPayload(payload: any, args: OrderArguments): Promise<Order> {
-    const order = await CrystallizeOrderFetcherById(
-        args.orderId,
-        args?.onCustomer,
-        args?.onOrderItem,
-        args?.extraQuery,
-    );
+    const fetcher = args.fetcherById ?? CrystallizeOrderFetcherById;
+    const order = await fetcher(args.orderId, args?.onCustomer, args?.onOrderItem, args?.extraQuery);
     if (!order) {
         throw {
             status: 404,
@@ -29,7 +25,8 @@ export async function handleOrderRequestPayload(payload: any, args: OrderArgumen
 
 export async function handleOrdersRequestPayload(payload: any, args: OrdersArguments): Promise<Order[]> {
     // @todo: handle pagination
-    const pagination = await CrystallizeOrderFetcherByCustomerIdentifier(
+    const fetcher = args.fetcherByCustomerIdentifier ?? CrystallizeOrderFetcherByCustomerIdentifier;
+    const pagination = await fetcher(
         args.user,
         args?.extraQueryArgs,
         args?.onCustomer,

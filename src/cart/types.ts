@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Image, Product, ProductVariant, ProductPriceVariant } from '@crystallize/js-api-client';
+import type { Image, Product, ProductVariant, ProductPriceVariant, ProductHydrater } from '@crystallize/js-api-client';
 
 const cartItemPayload = z.object({
     sku: z.string(),
@@ -39,6 +39,7 @@ export interface Price {
 }
 
 export type CartHydraterArguments = {
+    hydraterBySkus?: ProductHydrater;
     extraQuery?: any;
     perProduct?: (item: string, index: number) => any;
     perVariant?: (item: string, index: number) => any;

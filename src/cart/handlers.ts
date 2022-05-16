@@ -11,7 +11,9 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
         ...args,
     };
 
-    const response = await CrystallizeHydraterBySkus(
+    const hydrater = args.hydraterBySkus ?? CrystallizeHydraterBySkus;
+
+    const response = await hydrater(
         hydraterParameters.skus,
         hydraterParameters.locale,
         hydraterParameters.extraQuery,
