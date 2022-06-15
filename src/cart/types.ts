@@ -36,6 +36,10 @@ export interface Price {
     net: number;
     currency: string;
     taxAmount: number;
+    discounts?: {
+        amount: number;
+        percent?: number;
+    }[];
 }
 
 export type CartHydraterArguments = {

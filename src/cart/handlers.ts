@@ -1,4 +1,4 @@
-import { Cart, CartHydraterArguments, CartItem, CartPayload } from './types';
+import { Cart, CartHydraterArguments, CartItem, CartPayload, Price } from './types';
 import { CrystallizeHydraterBySkus, ProductPriceVariant } from '@crystallize/js-api-client';
 import type { ProductVariant, Product } from '@crystallize/js-api-client';
 
@@ -41,7 +41,7 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
         .map((sku: string, index: number) => response[`product${index}`])
         .filter((product) => !!product);
 
-    let totals = {
+    let totals: Price = {
         gross: 0,
         currency: 'USD',
         net: 0,
@@ -73,7 +73,7 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
                 : selectedVariant.priceVariants[0] || { price: 0, identifier: 'undefined' };
         const selectedCurrency =
             selectedVariant.priceVariants === undefined ? 'EUR' : selectedVariant.priceVariants[0].currency || 'EUR';
-        const grossAmount = selectedPrice?.price || 0 * item.quantity;
+        const grossAmount = (selectedPrice?.price || 0) * item.quantity;
         const taxAmount = (grossAmount * (product?.vatType?.percent || 0)) / 100;
         const netAmount = grossAmount + taxAmount;
 
