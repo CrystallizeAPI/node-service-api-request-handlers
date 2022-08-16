@@ -73,9 +73,17 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
                 : selectedVariant.priceVariants[0] || { price: 0, identifier: 'undefined' };
         const selectedCurrency =
             selectedVariant.priceVariants === undefined ? 'EUR' : selectedVariant.priceVariants[0].currency || 'EUR';
-        const grossAmount = (selectedPrice?.price || 0) * item.quantity;
-        const taxAmount = (grossAmount * (product?.vatType?.percent || 0)) / 100;
-        const netAmount = grossAmount + taxAmount;
+
+        /**
+         * Google is pretty inconsistent here about NET PRICE versus GROSS PRICE.
+         * We have to be opinionated about it
+         * GROSS PRICE includes tax
+         * NET PRICE is the price without tax
+         */
+
+        const netAmount = (selectedPrice?.price || 0) * item.quantity;
+        const taxAmount = (netAmount * (product?.vatType?.percent || 0)) / 100;
+        const grossAmount = netAmount + taxAmount;
 
         totals.taxAmount += taxAmount;
         totals.gross += grossAmount;
