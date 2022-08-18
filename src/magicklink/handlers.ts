@@ -2,19 +2,19 @@ import jwt from 'jsonwebtoken';
 import {
     MagickLinkConfirmArguments,
     MagickLinkRegisterArguments,
-    MagickLinkUserInfos,
     MagickLinkUserInfosPayload,
 } from './types';
 
-export async function handleMagickLinkRegisterPayload(
-    payload: MagickLinkUserInfosPayload,
-    args: MagickLinkRegisterArguments,
-): Promise<MagickLinkUserInfos> {
+export async function handleMagickLinkRegisterPayload<T extends MagickLinkUserInfosPayload = MagickLinkUserInfosPayload>(
+    payload: T,
+    args: MagickLinkRegisterArguments<T>,
+): Promise<T> {
+    const selector = args.userIdentifierSelector ?? ((payload: T) => payload.email);
     // we use a symetric key here to make it simple, but in production you should use a public/private key pair
     // which will allow you to verify the token client side too, (even if not really required it is a good idea)
     const magickToken = jwt.sign(payload, args.jwtSecret, {
         expiresIn: '30m',
-        audience: payload.email,
+        audience: selector(payload),
         subject: 'magicklink',
         issuer: args.host,
     });
@@ -23,12 +23,14 @@ export async function handleMagickLinkRegisterPayload(
     return payload;
 }
 
-export async function handleMagickLinkConfirmationRequestPayload(
+export async function handleMagickLinkConfirmationRequestPayload<T extends MagickLinkUserInfosPayload = MagickLinkUserInfosPayload>(
     payload: any,
-    args: MagickLinkConfirmArguments,
+    args: MagickLinkConfirmArguments<T>,
 ): Promise<string> {
+    const selector = args.userIdentifierSelector ?? ((payload: T) => payload.email);
+
     const magickToken: string = (args.token || '') as string;
-    const magickTokenDecoded: MagickLinkUserInfos = jwt.verify(magickToken, args.jwtSecret) as MagickLinkUserInfos;
+    const magickTokenDecoded = jwt.verify(magickToken, args.jwtSecret) as T;
     // now we create 2 tokens, one for the frontend to indicate that we are logged in and one for the service api in the Cookie
     // the token for the frontend is NOT a prood of login
     const isSupposedToBeLoggedInOnServiceApiToken = jwt.sign(
@@ -40,7 +42,7 @@ export async function handleMagickLinkConfirmationRequestPayload(
         args.jwtSecret,
         {
             expiresIn: '1d',
-            audience: magickTokenDecoded.email,
+            audience: selector(magickTokenDecoded),
             subject: 'isSupposedToBeLoggedInOnServiceApi',
             issuer: args.host,
         },
@@ -48,7 +50,7 @@ export async function handleMagickLinkConfirmationRequestPayload(
 
     const isLoggedInOnServiceApiToken = jwt.sign({}, args.jwtSecret, {
         expiresIn: '1d',
-        audience: magickTokenDecoded.email,
+        audience: selector(magickTokenDecoded),
         subject: 'isLoggedInOnServiceApiToken',
         issuer: args.host,
     });
