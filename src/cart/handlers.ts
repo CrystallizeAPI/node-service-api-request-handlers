@@ -43,8 +43,14 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
 
     let totals: Price = {
         gross: 0,
-        currency: 'USD',
+        currency: args.currency,
         net: 0,
+        discounts: [
+            {
+                amount: 0,
+                percent: 0,
+            },
+        ],
         taxAmount: 0,
     };
 
@@ -66,36 +72,51 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
             throw new Error(`Could not find variant with sku ${item.sku}`);
         }
 
-        // it's odd but it can happen that the product has no price
-        const selectedPrice: ProductPriceVariant =
-            selectedVariant.priceVariants === undefined
-                ? { price: 0, identifier: 'undefined' }
-                : selectedVariant.priceVariants[0] || { price: 0, identifier: 'undefined' };
-        const selectedCurrency =
-            selectedVariant.priceVariants === undefined ? 'EUR' : selectedVariant.priceVariants[0].currency || 'EUR';
+        // we need to pick the default price for the
+        let selectedPrice: ProductPriceVariant;
+        if (args.selectPriceVariant) {
+            selectedPrice = args.selectPriceVariant(product, selectedVariant, args.currency);
+        } else {
+            selectedPrice = selectedVariant?.priceVariants?.[0] ?? { price: 0, identifier: 'undefined' };
+        }
 
+        let basePrice: ProductPriceVariant;
+        if (args.basePriceVariant) {
+            basePrice = args.basePriceVariant(product, selectedVariant, args.currency);
+        } else {
+            basePrice = {
+                ...selectedPrice,
+            };
+        }
         /**
          * Google is pretty inconsistent here about NET PRICE versus GROSS PRICE.
          * We have to be opinionated about it
          * GROSS PRICE includes tax
          * NET PRICE is the price without tax
          */
+        const selectedNetAmount = (selectedPrice?.price || 0) * item.quantity;
+        const baseNetAmount = (basePrice?.price || 0) * item.quantity;
+        const taxAmount = (selectedNetAmount * (product?.vatType?.percent || 0)) / 100;
+        const grossAmount = selectedNetAmount + taxAmount;
 
-        const netAmount = (selectedPrice?.price || 0) * item.quantity;
-        const taxAmount = (netAmount * (product?.vatType?.percent || 0)) / 100;
-        const grossAmount = netAmount + taxAmount;
+        const discount = {
+            amount: baseNetAmount - selectedNetAmount,
+            percent: (baseNetAmount > 0 ? (baseNetAmount - selectedNetAmount) / baseNetAmount : 0) * 100,
+        };
 
         totals.taxAmount += taxAmount;
         totals.gross += grossAmount;
-        totals.net += netAmount;
-        totals.currency = selectedCurrency;
+        totals.net += selectedNetAmount;
+        totals.currency = args.currency;
+        totals.discounts![0].amount += discount.amount || 0;
 
         return {
             quantity: item.quantity,
             price: {
                 gross: grossAmount,
-                net: netAmount,
-                currency: selectedCurrency,
+                net: selectedNetAmount,
+                currency: args.currency,
+                discounts: [discount],
                 taxAmount,
             },
             variant: selectedVariant,
@@ -105,7 +126,15 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
     });
 
     const cart: Cart = {
-        total: totals,
+        total: {
+            ...totals,
+            discounts: [
+                {
+                    amount: totals.discounts![0].amount,
+                    percent: (1 - (totals.net + totals.discounts![0].amount) / totals.net) * 100,
+                },
+            ],
+        },
         cart: {
             items: items,
         },
