@@ -1,14 +1,9 @@
 import jwt from 'jsonwebtoken';
-import {
-    MagickLinkConfirmArguments,
-    MagickLinkRegisterArguments,
-    MagickLinkUserInfosPayload,
-} from './types';
+import { MagickLinkConfirmArguments, MagickLinkRegisterArguments, MagickLinkUserInfosPayload } from './types';
 
-export async function handleMagickLinkRegisterPayload<T extends MagickLinkUserInfosPayload = MagickLinkUserInfosPayload>(
-    payload: T,
-    args: MagickLinkRegisterArguments<T>,
-): Promise<T> {
+export async function handleMagickLinkRegisterPayload<
+    T extends MagickLinkUserInfosPayload = MagickLinkUserInfosPayload,
+>(payload: T, args: MagickLinkRegisterArguments<T>): Promise<T> {
     const selector = args.userIdentifierSelector ?? ((payload: T) => payload.email);
     // we use a symetric key here to make it simple, but in production you should use a public/private key pair
     // which will allow you to verify the token client side too, (even if not really required it is a good idea)
@@ -23,10 +18,9 @@ export async function handleMagickLinkRegisterPayload<T extends MagickLinkUserIn
     return payload;
 }
 
-export async function handleMagickLinkConfirmationRequestPayload<T extends MagickLinkUserInfosPayload = MagickLinkUserInfosPayload>(
-    payload: any,
-    args: MagickLinkConfirmArguments<T>,
-): Promise<string> {
+export async function handleMagickLinkConfirmationRequestPayload<
+    T extends MagickLinkUserInfosPayload = MagickLinkUserInfosPayload,
+>(payload: any, args: MagickLinkConfirmArguments<T>): Promise<string> {
     const selector = args.userIdentifierSelector ?? ((payload: T) => payload.email);
 
     const magickToken: string = (args.token || '') as string;
