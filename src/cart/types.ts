@@ -47,4 +47,9 @@ export type CartHydraterArguments = {
     extraQuery?: any;
     perProduct?: (item: string, index: number) => any;
     perVariant?: (item: string, index: number) => any;
+    currency: string;
+    // the PriceVariant that the Buyer is going to pay
+    selectPriceVariant: (product: Product, selectedVariant: ProductVariant, currency: string) => ProductPriceVariant;
+    // the Base PriceVariant to get the Discount From
+    basePriceVariant: (product: Product, selectedVariant: ProductVariant, currency: string) => ProductPriceVariant;
 };
