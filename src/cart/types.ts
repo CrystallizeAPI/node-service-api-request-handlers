@@ -48,8 +48,9 @@ export type CartHydraterArguments = {
     perProduct?: (item: string, index: number) => any;
     perVariant?: (item: string, index: number) => any;
     currency: string;
+    pricesHaveTaxesIncludedInCrystallize?: boolean;
     // the PriceVariant that the Buyer is going to pay
-    selectPriceVariant: (product: Product, selectedVariant: ProductVariant, currency: string) => ProductPriceVariant;
+    selectPriceVariant?: (product: Product, selectedVariant: ProductVariant, currency: string) => ProductPriceVariant;
     // the Base PriceVariant to get the Discount From
-    basePriceVariant: (product: Product, selectedVariant: ProductVariant, currency: string) => ProductPriceVariant;
+    basePriceVariant?: (product: Product, selectedVariant: ProductVariant, currency: string) => ProductPriceVariant;
 };
