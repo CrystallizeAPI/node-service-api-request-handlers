@@ -20,7 +20,7 @@ export type StripePaymentIntentArguments = {
     createIntentArguments: (cart: Cart) => {
         amount: number;
         currency: string;
-        metatdata: Stripe.MetadataParam;
+        metatdata?: Stripe.MetadataParam;
     };
     otherIntentArguments?: Stripe.PaymentIntentCreateParams;
 };

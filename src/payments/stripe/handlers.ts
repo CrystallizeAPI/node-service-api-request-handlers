@@ -13,17 +13,24 @@ export async function handleStripeCreatePaymentIntentRequestPayload(
     args: StripePaymentIntentArguments,
 ): Promise<StripePaymentIntent> {
     const stripe = new Stripe(args.secret_key, {
-        apiVersion: '2020-08-27',
+        apiVersion: '2022-08-01',
     });
     const cart = await args.fetchCart();
     const intentArguments = args.createIntentArguments(cart);
+
+    const defaultMetadata = {
+        cartId: payload.cartId,
+    };
     const paymentIntent = await stripe.paymentIntents.create({
         amount: intentArguments.amount,
         currency: intentArguments.currency,
         automatic_payment_methods: {
             enabled: true,
         },
-        metadata: intentArguments.metatdata,
+        metadata: {
+            ...defaultMetadata,
+            ...(intentArguments.metatdata ? intentArguments.metatdata : {}),
+        },
         ...(args.otherIntentArguments ? args.otherIntentArguments : {}),
     });
 
@@ -37,7 +44,7 @@ export async function handleStripePaymentIntentWebhookRequestPayload(
     args: StripePaymentIntentWebhookArguments,
 ): Promise<any> {
     const stripe = new Stripe(args.secret_key, {
-        apiVersion: '2020-08-27',
+        apiVersion: '2022-08-01',
     });
     const event = stripe.webhooks.constructEvent(args.rawBody, args.signature, args.endpointSecret);
     return await args.handleEvent(event.type, event);

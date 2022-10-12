@@ -8,3 +8,5 @@ export * from './order/types';
 export * from './payments/stripe/handlers';
 export * from './payments/stripe/types';
 export * from './core/statemachine';
+export * from './payments/quickpay/handlers';
+export * from './payments/quickpay/types';
