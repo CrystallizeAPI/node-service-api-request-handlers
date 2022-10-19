@@ -10,3 +10,5 @@ export * from './payments/stripe/types';
 export * from './core/statemachine';
 export * from './payments/quickpay/handlers';
 export * from './payments/quickpay/types';
+export * from './payments/klarna/handlers';
+export * from './payments/klarna/types';
