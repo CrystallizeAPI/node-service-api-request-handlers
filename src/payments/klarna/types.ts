@@ -69,10 +69,18 @@ export type KlarnaWebhookArguments = {
     handleEvent: (klarnaOrder: any) => Promise<any>;
 };
 
+export type KlarnaPaymentMethod = {
+    asset_urls: {
+        standard: string;
+    };
+    identifier: string;
+    name: string;
+};
+
 export type KlarnaPaymentResponse = {
     client_token: string;
     session_id: string;
-    payment_method_categories: string;
+    payment_method_categories: KlarnaPaymentMethod[];
 };
 
 export type KlarnaOrderResponse = {
