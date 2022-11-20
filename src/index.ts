@@ -12,3 +12,5 @@ export * from './payments/quickpay/handlers';
 export * from './payments/quickpay/types';
 export * from './payments/klarna/handlers';
 export * from './payments/klarna/types';
+export * from './payments/razorpay/handlers';
+export * from './payments/razorpay/types';
