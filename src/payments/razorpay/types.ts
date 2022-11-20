@@ -23,10 +23,10 @@ export type RazorPayVerificationPayload = any;
 
 export type RazorPayPaymentVerificationArguments = {
     orderCreationId: string;
-    razorpayPaymentId: string,
-    razorpayOrderId: string,
-    razorpaySignature: string,
-    key_secret: string,
-    key_id: string,
+    razorpayPaymentId: string;
+    razorpayOrderId: string;
+    razorpaySignature: string;
+    key_secret: string;
+    key_id: string;
     handleEvent: (eventName: string, event: any) => Promise<any>;
 };
