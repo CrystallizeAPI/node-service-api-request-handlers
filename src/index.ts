@@ -14,3 +14,5 @@ export * from './payments/klarna/handlers';
 export * from './payments/klarna/types';
 export * from './payments/razorpay/handlers';
 export * from './payments/razorpay/types';
+export * from './payments/montonio/handlers';
+export * from './payments/montonio/types';
