@@ -31,4 +31,5 @@ export type MagickLinkConfirmArguments<T extends MagickLinkUserInfosPayload> = {
     host: string;
     setCookie: (name: string, value: string) => void;
     userIdentifierSelector?: UserIdentifierSelector<T>;
+    extraPayload?: Record<string, any>;
 };

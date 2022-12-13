@@ -25,24 +25,24 @@ export async function handleMagickLinkConfirmationRequestPayload<
 
     const magickToken: string = (args.token || '') as string;
     const magickTokenDecoded = jwt.verify(magickToken, args.jwtSecret) as T;
+
+    const jwtPayload = {
+        email: magickTokenDecoded.email,
+        firstname: magickTokenDecoded.firstname,
+        lastname: magickTokenDecoded.lastname,
+        ...(args.extraPayload ? args.extraPayload : {}),
+    };
+
     // now we create 2 tokens, one for the frontend to indicate that we are logged in and one for the service api in the Cookie
     // the token for the frontend is NOT a prood of login
-    const isSupposedToBeLoggedInOnServiceApiToken = jwt.sign(
-        {
-            email: magickTokenDecoded.email,
-            firstname: magickTokenDecoded.firstname,
-            lastname: magickTokenDecoded.lastname,
-        },
-        args.jwtSecret,
-        {
-            expiresIn: '1d',
-            audience: selector(magickTokenDecoded),
-            subject: 'isSupposedToBeLoggedInOnServiceApi',
-            issuer: args.host,
-        },
-    );
+    const isSupposedToBeLoggedInOnServiceApiToken = jwt.sign(jwtPayload, args.jwtSecret, {
+        expiresIn: '1d',
+        audience: selector(magickTokenDecoded),
+        subject: 'isSupposedToBeLoggedInOnServiceApi',
+        issuer: args.host,
+    });
 
-    const isLoggedInOnServiceApiToken = jwt.sign({}, args.jwtSecret, {
+    const isLoggedInOnServiceApiToken = jwt.sign(jwtPayload, args.jwtSecret, {
         expiresIn: '1d',
         audience: selector(magickTokenDecoded),
         subject: 'isLoggedInOnServiceApiToken',
