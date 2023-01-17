@@ -25,6 +25,7 @@ export async function handleMontonioCreatePaymentLinkRequestPayload(
         checkout_phone_number: paymentArguments.customer.phone,
         checkout_first_name: paymentArguments.customer.firstName,
         checkout_last_name: paymentArguments.customer.lastName,
+        ...(args.otherPaymentArgumentsForLink ? args.otherPaymentArgumentsForLink : {}),
     };
     const token = jwt.sign(montonioPayload, args.secret_key, { algorithm: 'HS256', expiresIn: '10m' });
     return { url: `https://${args.origin}?payment_token=${token}` };
