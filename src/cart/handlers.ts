@@ -4,7 +4,6 @@ import type { ProductVariant, Product } from '@crystallize/js-api-client';
 
 export const handleCartRequestPayload = async (payload: CartPayload, args: CartHydraterArguments): Promise<Cart> => {
     const skus = payload.items.map((item) => item.sku);
-
     const hydraterParameters = {
         skus,
         locale: payload.locale,
