@@ -136,7 +136,10 @@ export const handleCartRequestPayload = async (payload: CartPayload, args: CartH
             discounts: [
                 {
                     amount: totals.discounts![0].amount,
-                    percent: (1 - (totals.net + totals.discounts![0].amount) / totals.net) * 100,
+                    percent:
+                        ((totals.net + totals.discounts![0].amount - totals.net) /
+                            (totals.net + totals.discounts![0].amount)) *
+                        100,
                 },
             ],
         },
