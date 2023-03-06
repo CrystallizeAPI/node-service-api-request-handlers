@@ -1,7 +1,7 @@
 {
     "name": "@crystallize/node-service-api-request-handlers",
     "license": "MIT",
-    "version": "3.4.2",
+    "version": "3.4.3",
     "author": "Crystallize <hello@crystallize.com> (https://crystallize.com)",
     "contributors": [
         "Sébastien Morel <sebastien@crystallize.com>"

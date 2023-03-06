@@ -14,6 +14,9 @@ export async function handleOrderRequestPayload(payload: any, args: OrderArgumen
             message: `Order ${args.orderId} does not exist.`,
         };
     }
+    if (args.checkIfOrderBelongsToUser && args.checkIfOrderBelongsToUser() === false) {
+        return order;
+    }
     if (order.customer?.identifier !== args.user) {
         throw {
             status: 403,

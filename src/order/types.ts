@@ -7,6 +7,7 @@ export type OrderArguments = {
     onCustomer?: any;
     onOrderItem?: any;
     extraQuery?: any;
+    checkIfOrderBelongsToUser?: () => boolean;
 };
 
 export type OrdersArguments = {
