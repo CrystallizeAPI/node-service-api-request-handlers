@@ -16,3 +16,5 @@ export * from './payments/razorpay/handlers';
 export * from './payments/razorpay/types';
 export * from './payments/montonio/handlers';
 export * from './payments/montonio/types';
+export * from './payments/adyen/handlers';
+export * from './payments/adyen/types';

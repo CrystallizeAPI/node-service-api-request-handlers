@@ -33,6 +33,7 @@
         "zod": "*"
     },
     "dependencies": {
+        "@adyen/api-library": "^13.0.0",
         "@crystallize/js-api-client": "*",
         "concurrently": "^7.4.0",
         "jsonwebtoken": "^8.5.1",
