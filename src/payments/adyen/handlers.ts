@@ -17,7 +17,7 @@ export async function handleAdyenPaymentSessionPayload(
     const response = await checkout.sessions({
         amount: {
             currency: args.currency,
-            value: cart.total.gross,
+            value: cart.total.gross * 100,
         },
         countryCode: args.countryCode,
         merchantAccount: args.merchantAccount,
