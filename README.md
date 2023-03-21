@@ -381,7 +381,7 @@ Arguments are:
 
 There are 2 handlers to handle payment with Montonio.
 
-The first handler is to manage the creation of the the Link:
+The first handler is to manage the creation of the Link:
 
 ```typescript
 await handleMontonioCreatePaymentLinkRequestPayload(validatePayload(payload, montonioCreatePaymentLinkPayload), {
@@ -452,6 +452,132 @@ Arguments are:
 
 -   secret_key (required): to verify the Signature from Montonio
 -   token (required): the token provided by Montonio
+-   handleEvent (required): your custom logic
+
+## Adyen Payment
+
+There are 2 handlers to handle payment with Adyen.
+
+The first handler is to manage the creation of the session:
+
+```typescript
+await handleAdyenPaymentSessionPayload(validatePayload(payload, adyenPaymentPayload), {
+    currency,
+    returnUrl: `${context.baseUrl}${orderCartLink}`,
+    merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
+    apiKey: process.env.ADYEN_API_KEY,
+    env: process.env.ADYEN_ENV,
+    countryCode: currency === 'NOK' ? 'NO' : currency === 'USD' ? 'US' : 'FR',
+    fetchCart: async () => {
+        return cartWrapper.cart;
+    },
+});
+```
+
+Arguments are:
+
+-   currency (required): the currency the payment will take place in
+-   merchantAccount (required): your Adyen merchant account name
+-   apiKey (required): to communicate with Adyen
+-   env (required): the Adyen environment, can either be 'Live' or 'TEST'
+-   countrCode (required): the ISO country code where the transaction is taking place
+-   fetchCart (required): provide the hander a way to fetch the Cart
+
+The second handler is to handle the Webhook that Adyen will call to inform about the Payment:
+
+```typescript
+await handleAdyenWebhookRequestPayload(payload, {
+    handleEvent: async () => {
+        for (let i = 0; i < payload?.notificationItems?.length; i++) {
+            const event = payload?.notificationItems[i]?.NotificationRequestItem;
+            const cartId = event.merchantReference;
+
+            switch (event.eventCode) {
+                case 'AUTHORISATION':
+                    const cartWrapper = await cartWrapperRepository.find(cartId);
+                    if (event.success !== 'true') {
+                        throw {
+                            message: `Payment failed for cart '${cartId}'.`,
+                            status: 403,
+                        };
+                    }
+                    if (!cartWrapper) {
+                        throw {
+                            message: `===> Cart '${cartId}' does not exist.`,
+                            status: 404,
+                        };
+                    }
+                // your custom logic here
+            }
+        }
+    },
+});
+```
+
+Argument is:
+
+-   handleEvent (required): your custom logic
+
+## Razorpay Payment
+
+There are 2 handlers to handle payment with Razorpay.
+
+The first handler is to manage the creation of the order:
+
+```typescript
+await handleRazorPayOrderPayload(validatePayload(payload, razorPayPaymentPayload), {
+    currency: cartWrapper.cart.total.currency.toUpperCase(),
+    credentials: {
+        key_id: process.env.RAZORPAY_ID,
+        key_secret: process.env.RAZORPAY_SECRET,
+    },
+    fetchCart: async () => {
+        return cartWrapper.cart;
+    },
+});
+```
+
+Arguments are:
+
+-   currency (required): the currency the payment will take place in
+-   credentials: includes both the key_id and the key_secret to communicate with Razorpay
+-   fetchCart (required): provide the hander a way to fetch the Cart
+
+The second handler is to verify the transaction:
+
+```typescript
+await handleRazorPayPaymentVerificationPayload(payload, {
+    orderCreationId: payload.orderCreationId,
+    razorpayPaymentId: payload.razorpayPaymentId,
+    razorpayOrderId: payload.razorpayOrderId,
+    razorpaySignature: payload.razorpaySignature,
+    key_secret: process.env.RAZORPAY_SECRET,
+    key_id: process.env.RAZORPAY_ID,
+    handleEvent: async (eventName: string, event: any) => {
+        const cartId = event.notes.cartId;
+        const cartWrapper = await cartWrapperRepository.find(cartId);
+        if (!cartWrapper) {
+            throw {
+                message: `Cart '${cartId}' does not exist.`,
+                status: 404,
+            };
+        }
+        switch (eventName) {
+            case 'success':
+            // your custom logic here
+        }
+    },
+});
+```
+
+Arguments are:
+
+-   orderCreationId (required): the order creation ID sent by Razorpay in the previous step
+-   razorpayPaymentId (required): the payment ID receieved in the last step
+-   razorparOrderId (required): different from the order creation ID, recieved when the order is created in Razorpay
+-   razorpaySignature (required): receive in the Request to enforce validation that is coming from Razorpay
+-   key_secret (required): to communicate with Razorpay
+-   key_id (required): API key ID to communicate with Razorpay
 -   handleEvent (required): your custom logic
 
 [crystallizeobject]: crystallize_marketing|folder|62561a2ab30ff82a1f664932
