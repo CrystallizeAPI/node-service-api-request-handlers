@@ -15,6 +15,11 @@ export const cartPayload = z.object({
 export type CartPayload = z.infer<typeof cartPayload>;
 export type CartItemPayload = z.infer<typeof cartItemPayload>;
 
+export interface KeyValuePair {
+    key: string;
+    value?: string;
+}
+
 export interface Cart {
     cart: {
         items: CartItem[];
@@ -29,6 +34,7 @@ export interface CartItem {
     product: Product;
     variant: ProductVariant;
     variantPrice: ProductPriceVariant;
+    meta?: KeyValuePair[];
 }
 
 export interface Price {
