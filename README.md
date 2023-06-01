@@ -580,4 +580,134 @@ Arguments are:
 -   key_id (required): API key ID to communicate with Razorpay
 -   handleEvent (required): your custom logic
 
+## Vipps Payment
+
+There are 3 handlers to handle payment with Vipps and some functions to ease the integration.
+
+> Vipps does not have Webhooks mechanism yet, so polling must be used.
+
+The first handler is to manage the creation of a Checkout Session:
+
+```typescript
+const handlingResult = await handleVippsCreateCheckoutSessionRequestPayload(
+    validatePayload(payload, vippsInitiatePaymentPayload),
+    {
+        origin: process.env.VIPPS_ORIGIN,
+        clientId: process.env.VIPPS_CLIENT_ID,
+        clientSecret: process.env.VIPPS_CLIENT_SECRET,
+        merchantSerialNumber: process.env.VIPPS_MSN,
+        subscriptionKey: process.env.VIPPS_SUBSCRIPTION_KEY,
+        fetchCart: async () => {
+            return cartWrapper.cart;
+        },
+        createCheckoutArguments: (cart: Cart) => {
+            return {
+                amount: cart.total.gross * 100,
+                currency: 'NOK',
+                callbackUrl,
+                returnUrl,
+                callbackAuthorizationToken,
+                paymentDescription: `Payment for Cart XXX`,
+            };
+        },
+    },
+);
+```
+
+Arguments are:
+
+-   all the env variables that act as credentials to discuss with Vipps, this library handles the heavy lifting.
+-   fetchCart (required): provide the hander a way to fetch the Cart
+-   createCheckoutArguments(required): is the way to customize your Vipps Checkout experience
+
+The second handler is really similar, to handle a flow using the Vipps Payment API, you have more control here.
+
+```typescript
+const handlingResult = await handleVippsInitiatePaymentRequestPayload(
+    validatePayload(payload, vippsInitiatePaymentPayload),
+    {
+        ...sameAsTheOther,
+        createIntentArguments: (cart: Cart) => {
+            return {
+                amount: cart.total.gross * 100,
+                currency: 'NOK',
+                paymentMethod: vippsMethod as 'CARD' | 'WALLET',
+                userFlow: vippsFlow as 'PUSH_MESSAGE' | 'NATIVE_REDIRECT' | 'WEB_REDIRECT' | 'QR',
+                returnUrl,
+            };
+        },
+    },
+);
+```
+
+Almost the same arguments but with the other function:
+
+-   createIntentArguments(required): is the way to customize your Vipps ePayment flow experience.
+
+The third handler is to verify the transaction:
+
+Once again Vipps does not have Webhooks so this is just a passthrough that you can call directly for now.
+
+```typescript
+await handleVippsPayPaymentUpdateWebhookRequestPayload(payload, {
+    handleEvent: async (payment: any) => {
+        if (payment.state === 'AUTHORIZED') {
+            const orderCreatedConfirmation = await pushOrder(cartWrapperRepository, apiClient, cartWrapper, {...});
+            const credentials: VippsAppCredentials = {...};
+            const receipt: VippsReceipt = {...}
+            };
+            addVippsReceiptOrder({
+                paymentType: "ecom",
+                orderId: cartWrapper.cartId,
+                receipt,
+            }, credentials)
+            return orderCreatedConfirmation;
+        }
+    },
+```
+
+Arguments are:
+
+-   handleEvent (required): your custom logic
+
+This is interesting to see the usage of the function `addVippsReceiptOrder` which is an helper to push a `VippsReceipt` with the Order on Vipps side.
+
+The last bit of the Vipps integration is the Polling mechanism, you can use any system to run that code every 2-5 seconds and this library provides you 2 methods to check the payment status:
+
+```typescript
+fetchVippsCheckoutSession = (url: string, credentials: VippsAppCredentials) => Promise<{ session: any, payment?: any}>
+
+fetchVippsPayment = (reference: string, credentials: VippsAppCredentials) => Promise<any|undefined>
+```
+
+`fetchVippsCheckoutSession` is actually using `fetchVippsPayment` when the Session has a payment associated with it. (during the flow).
+
+The final usage could look similar to this:
+
+```typescript
+const handlingResult = {.../* See below */}
+if (handlingResult) {
+    pollingUntil(async () => {
+        if (handlingResult.pollingUrl) {
+            const { payment, session } = await fetchVippsCheckoutSession(handlingResult.pollingUrl, credentials);
+            if (!payment) {
+                return false;
+            }
+            await handleVippsPayPaymentUpdateWebhookRequestPayload(...)
+            return session.paymentDetails?.state !== 'CREATED';
+        }
+
+        const payment = await fetchVippsPayment(handlingResult.reference, credentials);
+        if (!payment) {
+            return false;
+        }
+        await handleVippsPayPaymentUpdateWebhookRequestPayload(...)
+        return payment.state !== 'CREATED';
+    });
+}
+```
+
+The `pollingUntil` function is a simple function that run `setTimeout`.
+If the payment state is different than `CREATED` we stop polling.
+
 [crystallizeobject]: crystallize_marketing|folder|62561a2ab30ff82a1f664932
