@@ -53,6 +53,22 @@ export type VippsCreateCheckoutSessionResponse = {
     pollingUrl: string;
 };
 
+export type VippsInitiateExpressCheckoutPayload = {
+    cartId: string;
+    mobileNumber?: string;
+};
+export type VippsInitiateExpressCheckoutArguments = VippsAppCredentials & {
+    callbackPrefix: string;
+    fallback: string;
+    consentRemovalPrefix: string;
+    extraMerchantInfo?: any;
+    fetchCart: () => Promise<Cart>;
+};
+export type VippsInitiateExpressCheckoutResponse = {
+    orderId: string;
+    url: string;
+};
+
 // this does not exist yet, we fake it for now
 // we are actually polling and we will force all that function directly (without any webhook)
 export type VippsWebhookPayload = any;

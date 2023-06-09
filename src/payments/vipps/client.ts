@@ -40,7 +40,7 @@ async function getAuthHeaders({
     fetchToken,
 }: Credentials) {
     if (fetchToken) {
-        const response = await fetchResult(`https://${origin}/accessToken/get`, {
+        const response = await fetchResult(`https://${origin}/accesstoken/get`, {
             method: 'POST',
             headers: {
                 client_id: clientId,

@@ -582,7 +582,7 @@ Arguments are:
 
 ## Vipps Payment
 
-There are 3 handlers to handle payment with Vipps and some functions to ease the integration.
+There are 4 handlers to handle payment with Vipps and some functions to ease the integration.
 
 > Vipps does not have Webhooks mechanism yet, so polling must be used.
 
@@ -709,5 +709,21 @@ if (handlingResult) {
 
 The `pollingUntil` function is a simple function that run `setTimeout`.
 If the payment state is different than `CREATED` we stop polling.
+
+The fourth handler is to manage the Express Checkout, the logic is similar
+
+```typescript
+await handleVippsInitiateExpressCheckoutRequestPayload({ cartId: cartWrapper.cartId },
+    {
+        ...,
+        callbackPrefix: `${context.baseUrl}${webhookCallbackUrl}`,
+        consentRemovalPrefix: `${context.baseUrl}${buildLanguageMarketAwareLink('/', context.language, context.market)}`,
+        fallback: `${context.baseUrl}${orderCartUrl}`,
+        extraMerchantInfo: {...}
+    },
+);
+```
+
+Then you can continue the flow like the previous method.
 
 [crystallizeobject]: crystallize_marketing|folder|62561a2ab30ff82a1f664932
