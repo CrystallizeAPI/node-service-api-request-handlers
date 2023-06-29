@@ -1,4 +1,7 @@
+import jwt from 'jsonwebtoken';
 import { createClient } from './client';
+import { fetchVippsTokenFromOAuthCode } from './fetchTokenFromOAuthCode';
+import { fetchVippsUserInfoFromOAuthToken } from './fetchUserInfoFromOAuthToken';
 import {
     VippsCreateCheckoutSessionArguments,
     VippsCreateCheckoutSessionResponse,
@@ -8,6 +11,8 @@ import {
     VippsInitiatePaymentArguments,
     VippsInitiatePaymentPayload,
     VippsInitiatePaymentResponse,
+    VippsLoginOAuthArguments,
+    VippsLoginOAuthPayload,
     VippsWebhookArguments,
     VippsWebhookPayload,
 } from './types';
@@ -124,4 +129,55 @@ export async function handleVippsInitiateExpressCheckoutRequestPayload(
         },
     };
     return await client.post<VippsInitiateExpressCheckoutResponse>(`/ecomm/v2/payments`, body, 'payload.cartId');
+}
+
+export async function handleVippsLoginOAuthRequestPayload(
+    payload: VippsLoginOAuthPayload,
+    args: VippsLoginOAuthArguments,
+): Promise<string> {
+    if (payload.state !== args.expectedState) {
+        throw new Error('The state does not match');
+    }
+
+    const credentials = {
+        origin: args.origin,
+        clientId: args.clientId,
+        clientSecret: args.clientSecret,
+        subscriptionKey: args.subscriptionKey,
+        merchantSerialNumber: args.merchantSerialNumber,
+    };
+    const token = await fetchVippsTokenFromOAuthCode(payload.code, args.redirectUri, credentials);
+    const userInfos = await fetchVippsUserInfoFromOAuthToken<{
+        email: string;
+        given_name: string;
+        family_name: string;
+    }>(token, credentials);
+
+    if (args.onUserInfos) {
+        await args.onUserInfos(userInfos);
+    }
+
+    const jwtPayload = {
+        email: userInfos.email,
+        firstname: userInfos.given_name ?? '',
+        lastname: userInfos.family_name ?? '',
+    };
+
+    // now we create 2 tokens, one for the frontend to indicate that we are logged in and one for the service api in the Cookie
+    // the token for the frontend is NOT a prood of login
+    const isSupposedToBeLoggedInOnServiceApiToken = jwt.sign(jwtPayload, args.jwtSecret, {
+        expiresIn: '1d',
+        audience: userInfos.email,
+        subject: 'isSupposedToBeLoggedInOnServiceApi',
+        issuer: `${args.host} via Vipps Login`,
+    });
+
+    const isLoggedInOnServiceApiToken = jwt.sign(jwtPayload, args.jwtSecret, {
+        expiresIn: '1d',
+        audience: userInfos.email,
+        subject: 'isLoggedInOnServiceApiToken',
+        issuer: `${args.host} via Vipps Login`,
+    });
+    args.setCookie('jwt', isLoggedInOnServiceApiToken);
+    return args.backLinkPath.replace(':token', isSupposedToBeLoggedInOnServiceApiToken);
 }

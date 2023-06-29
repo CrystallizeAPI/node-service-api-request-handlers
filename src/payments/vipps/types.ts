@@ -117,3 +117,18 @@ export type AddReceiptToOrderArgs = {
     paymentType: 'ecom' | 'recurring';
     receipt: VippsReceipt;
 };
+
+export type VippsLoginOAuthPayload = {
+    code: string;
+    state: string;
+};
+
+export type VippsLoginOAuthArguments = VippsAppCredentials & {
+    jwtSecret: string;
+    host: string;
+    expectedState: string;
+    backLinkPath: string;
+    redirectUri: string;
+    setCookie: (name: string, value: string) => void;
+    onUserInfos?: (userInfos: any) => Promise<any>;
+};

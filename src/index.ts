@@ -24,3 +24,5 @@ export * from './payments/vipps/client';
 export * from './payments/vipps/fetchCheckoutSession';
 export * from './payments/vipps/fetchPayment';
 export * from './payments/vipps/addReceiptOrder';
+export * from './payments/vipps/fetchTokenFromOAuthCode';
+export * from './payments/vipps/fetchUserInfoFromOAuthToken';

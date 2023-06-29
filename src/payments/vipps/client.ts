@@ -29,6 +29,8 @@ export type ClientInterface = Awaited<ReturnType<typeof createClient>>;
 type Credentials = VippsAppCredentials & {
     extraHeaders?: Record<string, string>;
     fetchToken?: boolean;
+    oauthConnect?: boolean;
+    oauthToken?: string;
 };
 
 async function getAuthHeaders({
@@ -38,7 +40,24 @@ async function getAuthHeaders({
     subscriptionKey,
     merchantSerialNumber,
     fetchToken,
+    oauthConnect,
+    oauthToken,
 }: Credentials) {
+    if (oauthConnect) {
+        return {
+            Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+            'Merchant-Serial-Number': merchantSerialNumber,
+        };
+    }
+
+    if (oauthToken) {
+        return {
+            Authorization: `Bearer ${oauthToken}`,
+            'Ocp-Apim-Subscription-Key': subscriptionKey,
+            'Merchant-Serial-Number': merchantSerialNumber,
+        };
+    }
+
     if (fetchToken) {
         const response = await fetchResult(`https://${origin}/accesstoken/get`, {
             method: 'POST',
@@ -72,6 +91,8 @@ export const createClient = async ({
     merchantSerialNumber,
     extraHeaders,
     fetchToken,
+    oauthConnect,
+    oauthToken,
 }: Credentials) => {
     const authHeaders = await getAuthHeaders({
         origin,
@@ -80,12 +101,14 @@ export const createClient = async ({
         subscriptionKey,
         merchantSerialNumber,
         fetchToken,
+        oauthConnect,
+        oauthToken,
     });
     return {
         get: async <T>(endpoint: string, idempotencyKey: string, init?: RequestInit): Promise<T> => {
             return fetchResult(`https://${origin}${endpoint}`, {
                 headers: {
-                    'Idempotency-Key': idempotencyKey,
+                    ...(idempotencyKey.length > 0 ? { 'Idempotency-Key': idempotencyKey } : {}),
                     ...authHeaders,
                     ...extraHeaders,
                 },
@@ -96,11 +119,29 @@ export const createClient = async ({
             return fetchResult(`https://${origin}${endpoint}`, {
                 method: 'POST',
                 headers: {
-                    'Idempotency-Key': idempotencyKey,
+                    ...(idempotencyKey.length > 0 ? { 'Idempotency-Key': idempotencyKey } : {}),
                     ...authHeaders,
                     ...extraHeaders,
                 },
                 body: JSON.stringify(body),
+                ...init,
+            });
+        },
+        formEncodedPost: async <T>(
+            endpoint: string,
+            body: any,
+            idempotencyKey: string,
+            init?: RequestInit,
+        ): Promise<T> => {
+            return fetchResult(`https://${origin}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    ...(idempotencyKey.length > 0 ? { 'Idempotency-Key': idempotencyKey } : {}),
+                    ...authHeaders,
+                    ...extraHeaders,
+                    'Content-type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(body),
                 ...init,
             });
         },

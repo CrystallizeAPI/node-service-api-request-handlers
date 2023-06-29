@@ -582,7 +582,7 @@ Arguments are:
 
 ## Vipps Payment
 
-There are 4 handlers to handle payment with Vipps and some functions to ease the integration.
+This libs provide many handlers to handle payment and login with Vipps and some functions to ease the integration.
 
 > Vipps does not have Webhooks mechanism yet, so polling must be used.
 
@@ -725,5 +725,33 @@ await handleVippsInitiateExpressCheckoutRequestPayload({ cartId: cartWrapper.car
 ```
 
 Then you can continue the flow like the previous method.
+
+The fifth handler is to handle the login and it behaves the same way as the magick link feature described above, but instead of receiving a JWT from an link in an email it receives a `code` and a `state` from Vipps.
+
+```typescript
+await handleVippsLoginOAuthRequestPayload(
+    {
+        context.url.searchParams.get('code'),
+        state: context.url.searchParams.get('state'),
+    },
+    {
+        ...credentials,
+        host: context.host,
+        expectedState,
+        redirectUri,
+        jwtSecret,
+        backLinkPath: `${frontendUrl}${backLinkPath}?token=:token`,
+        setCookie: (name: string, value: string) => {
+            {...}
+        },
+        onUserInfos: async (userInfos) => {
+            {...}
+        },
+    },
+);
+```
+
+> Under the hood, the handler verifies the Code with Vipps and it fetches the UserInfos.
+> Then the handler behave the same as the Magick Link handler, and you have the `onUserInfos` hook that you can use to do more with data coming from Vipps.
 
 [crystallizeobject]: crystallize_marketing|folder|62561a2ab30ff82a1f664932
