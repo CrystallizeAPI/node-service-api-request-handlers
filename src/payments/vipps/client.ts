@@ -127,6 +127,18 @@ export const createClient = async ({
                 ...init,
             });
         },
+        put: async <T>(endpoint: string, body: any, idempotencyKey: string, init?: RequestInit): Promise<T> => {
+            return fetchResult(`https://${origin}${endpoint}`, {
+                method: 'PUT',
+                headers: {
+                    ...(idempotencyKey.length > 0 ? { 'Idempotency-Key': idempotencyKey } : {}),
+                    ...authHeaders,
+                    ...extraHeaders,
+                },
+                body: JSON.stringify(body),
+                ...init,
+            });
+        },
         formEncodedPost: async <T>(
             endpoint: string,
             body: any,

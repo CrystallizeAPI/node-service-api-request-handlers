@@ -26,3 +26,7 @@ export * from './payments/vipps/fetchPayment';
 export * from './payments/vipps/addReceiptOrder';
 export * from './payments/vipps/fetchTokenFromOAuthCode';
 export * from './payments/vipps/fetchUserInfoFromOAuthToken';
+export * from './payments/vipps/capturePayment';
+export * from './payments/vipps/cancelPayment';
+export * from './payments/vipps/refundPayment';
+
