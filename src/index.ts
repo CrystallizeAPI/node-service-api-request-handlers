@@ -29,4 +29,3 @@ export * from './payments/vipps/fetchUserInfoFromOAuthToken';
 export * from './payments/vipps/capturePayment';
 export * from './payments/vipps/cancelPayment';
 export * from './payments/vipps/refundPayment';
-
