@@ -8,6 +8,5 @@ export const captureVippsPayment = async (orderId: string, credentials: VippsApp
     });
     const capturedConfirmation = await client.post(`/ecomm/v2/payments/${orderId}/capture`, body, orderId);
 
-    console.log('Captured confirmation: ', capturedConfirmation);
     return capturedConfirmation;
 };
