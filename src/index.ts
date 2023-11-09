@@ -29,3 +29,6 @@ export * from './payments/vipps/fetchUserInfoFromOAuthToken';
 export * from './payments/vipps/capturePayment';
 export * from './payments/vipps/cancelPayment';
 export * from './payments/vipps/refundPayment';
+export * from './payments/dintero/fetchAuthToken';
+export * from './payments/dintero/handlers';
+export * from './payments/dintero/types';
