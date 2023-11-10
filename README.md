@@ -755,3 +755,72 @@ await handleVippsLoginOAuthRequestPayload(
 > Then the handler behave the same as the Magick Link handler, and you have the `onUserInfos` hook that you can use to do more with data coming from Vipps.
 
 [crystallizeobject]: crystallize_marketing|folder|62561a2ab30ff82a1f664932
+
+## Dintero Payment
+
+There are 2 handlers to handle payment with Dintero.
+
+The first handler is to manage the creation of the session:
+
+```typescript
+await handleDinteroPaymentSessionPayload(validatePayload(payload, dinteroPaymentPayload), {
+    credentials: {
+        clientId: process.env.DINTERO_CLIENT_ID,
+        clientSecret: process.env.DINTERO_CLIENT_SECRET,
+        accountId: process.env.DINTERO_ACCOUNT_ID,
+    },
+    returnUrl: `${context.baseUrl}${orderCartLink}`,
+    fetchCart: async () => {
+        return cartWrapper.cart;
+    },
+});
+```
+
+Arguments are:
+
+-   credentials (required): includes the client_id, account_id, and the client_secret to communicate with Dintero
+-   returnUrl (required): the url to redirect to once the payment is done
+-   fetchCart (required): provide the handler a way to fetch the Cart
+
+The second handler is to verify the transaction:
+
+```typescript
+await handleDinteroVerificationPayload(payload, {
+    credentials: {
+        clientId: process.env.DINTERO_CLIENT_ID ?? storeFrontConfig.configuration?.DINTERO_CLIENT_ID ?? '',
+        clientSecret: process.env.DINTERO_CLIENT_SECRET ?? storeFrontConfig.configuration?.DINTERO_CLIENT_SECRET ?? '',
+        accountId: process.env.DINTERO_ACCOUNT_ID ?? storeFrontConfig.configuration?.DINTERO_ACCOUNT_ID ?? '',
+    },
+    transactionId: payload,
+    handleEvent: async (eventName: string, event: any) => {
+        const cartId = event.merchant_reference;
+        const cartWrapper = await cartWrapperRepository.find(cartId);
+        if (!cartWrapper) {
+            throw {
+                message: `Cart '${cartId}' does not exist.`,
+                status: 404,
+            };
+        }
+        switch (eventName) {
+            case 'AUTHORIZED':
+                const orderCreatedConfirmation = await pushOrder(cartWrapperRepository, apiClient, cartWrapper!, {
+                    //@ts-ignore
+                    provider: 'custom',
+                    custom: {
+                        properties: [
+                            { property: 'payment_provider', value: 'dintero' },
+                            { property: 'dintero_transaction_id', value: event.id },
+                        ],
+                    },
+                });
+                return orderCreatedConfirmation;
+        }
+    },
+});
+```
+
+Arguments are:
+
+-   credentials (required): includes the client_id, account_id, and the client_secret to communicate with Dintero
+-   transactionId: the transaction ID returned by Dintero once the transaction goes through
+-   handleEvent (required): your custom logic
