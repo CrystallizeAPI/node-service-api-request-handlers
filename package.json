@@ -1,10 +1,11 @@
 {
     "name": "@crystallize/node-service-api-request-handlers",
     "license": "MIT",
-    "version": "4.0.0",
+    "version": "4.1.0",
     "author": "Crystallize <hello@crystallize.com> (https://crystallize.com)",
     "contributors": [
-        "Sébastien Morel <sebastien@crystallize.com>"
+        "Sébastien Morel <sebastien@crystallize.com>",
+        "Dhairya Dwivedi <dhairya@crystallize.com>"
     ],
     "scripts": {
         "watch": "tsc -W",

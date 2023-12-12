@@ -13,13 +13,16 @@ export type DinteroCreateSessionArguments = {
     credentials: DinteroCredentials;
     fetchCart: () => Promise<Cart>;
     returnUrl: string;
+    callbackUrl: string;
     otherPaymentArguments?: any;
+    customer?: any;
 };
 
 export type DinteroCredentials = {
     clientId: string;
     clientSecret: string;
     accountId: string;
+    profileId?: string;
 };
 
 export type DinteroVerificationPayload = any;
