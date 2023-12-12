@@ -1,18 +1,6 @@
 import { fetchDinteroAuthToken } from './fetchAuthToken';
 import { DinteroCreateSessionArguments, DinteroPaymentPayload, DinteroPaymentVerificationArguments } from './types';
 
-const buildAddress = (customer: any) => {
-    return {
-        first_name: customer.firstName ?? '',
-        last_name: customer.lastName ?? '',
-        address_line: customer?.streetAddress ?? '',
-        postal_code: customer?.zipCode ?? '',
-        postal_place: customer?.city ?? '',
-        country: customer?.country ?? '',
-        email: customer?.email ?? '',
-    };
-};
-
 export async function handleDinteroPaymentSessionPayload(
     payload: DinteroPaymentPayload,
     args: DinteroCreateSessionArguments,
@@ -48,8 +36,8 @@ export async function handleDinteroPaymentSessionPayload(
                             amount: discount.amount * 100,
                         })) ?? [],
                 })),
-                shipping_address: buildAddress(args.customer),
-                billing_address: buildAddress(args.customer),
+                shipping_address: args.customer?.shippingAddress,
+                billing_address: args.customer?.billingAddress,
             },
             url: {
                 return_url: args.returnUrl,
