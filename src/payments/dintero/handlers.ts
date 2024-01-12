@@ -9,6 +9,8 @@ export async function handleDinteroPaymentSessionPayload(
 
     const authToken = await fetchDinteroAuthToken(args.credentials);
 
+    const expressCheckoutObject = args.express?.enabled ? { express: args.express.expressCheckoutOptions } : {};
+
     const response = await fetch('https://checkout.dintero.com/v1/sessions-profile', {
         method: 'POST',
         headers: {
@@ -46,6 +48,7 @@ export async function handleDinteroPaymentSessionPayload(
             customer: {
                 email: args?.customer?.email ?? '',
             },
+            ...expressCheckoutObject,
         }),
     }).then((res) => res.json());
 

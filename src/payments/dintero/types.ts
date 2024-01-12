@@ -9,6 +9,39 @@ export const dinteroPaymentPayload = z
 
 export type DinteroPaymentPayload = z.infer<typeof dinteroPaymentPayload>;
 
+export type DinteroCreateSessionArguments = {
+    credentials: DinteroCredentials;
+    fetchCart: () => Promise<Cart>;
+    returnUrl: string;
+    callbackUrl: string;
+    customer?: {
+        email?: string;
+        phone?: string;
+        shippingAddress?: DinteroAddress;
+        billingAddress?: DinteroAddress;
+    };
+    express?: {
+        enabled: boolean;
+        expressCheckoutOptions: ExpressShipping;
+    };
+    otherPaymentArguments?: any;
+};
+
+export type DinteroCredentials = {
+    clientId: string;
+    clientSecret: string;
+    accountId: string;
+    profileId?: string;
+};
+
+export type DinteroVerificationPayload = any;
+
+export type DinteroPaymentVerificationArguments = {
+    transactionId: string;
+    credentials: DinteroCredentials;
+    handleEvent: (eventName: string, event: any) => Promise<any>;
+};
+
 export type DinteroAddress = {
     first_name?: string;
     last_name?: string;
@@ -30,31 +63,59 @@ export type DinteroAddress = {
     cost_center?: string;
 };
 
-export type DinteroCreateSessionArguments = {
-    credentials: DinteroCredentials;
-    fetchCart: () => Promise<Cart>;
-    returnUrl: string;
-    callbackUrl: string;
-    otherPaymentArguments?: any;
-    customer?: {
-        email?: string;
-        phone?: string;
-        shippingAddress?: DinteroAddress;
-        billingAddress?: DinteroAddress;
-    };
+type Eta = {
+    starts_at: string;
+    ends_at: string;
 };
 
-export type DinteroCredentials = {
-    clientId: string;
-    clientSecret: string;
-    accountId: string;
-    profileId?: string;
+type TimeSlot = {
+    starts_at: string;
+    ends_at: string;
 };
 
-export type DinteroVerificationPayload = any;
+type Metadata = {
+    operator_dest: string;
+    number_x: number;
+};
 
-export type DinteroPaymentVerificationArguments = {
-    transactionId: string;
-    credentials: DinteroCredentials;
-    handleEvent: (eventName: string, event: any) => Promise<any>;
+type Details = {
+    label: string;
+    value: string;
+};
+
+type EnvironmentalData = {
+    description: string;
+    details: Details[];
+};
+
+type ShippingOption = {
+    id: string;
+    line_id: string;
+    countries?: string[];
+    amount: number;
+    vat_amount?: number;
+    vat?: number;
+    title: string;
+    description?: string;
+    delivery_method?: 'delivery' | 'pick_up' | 'unspecified' | 'none';
+    operator: string;
+    operator_product_id?: string;
+    eta?: Eta;
+    time_slot?: TimeSlot;
+    pick_up_address?: DinteroAddress;
+    metadata?: Metadata;
+    environmental_data?: EnvironmentalData;
+};
+
+type DiscountCodes = {
+    max_count: number;
+    callback_url: string;
+};
+
+type ExpressShipping = {
+    shipping_options: ShippingOption[];
+    shipping_mode?: string;
+    discount_codes?: DiscountCodes;
+    shipping_address_callback_url?: string;
+    customer_types?: ('b2c' | 'b2b')[];
 };
